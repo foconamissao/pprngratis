@@ -210,6 +210,15 @@
   .attention-text a{ color:var(--brass); font-weight:700; text-decoration:underline; }
   .attention-text a:hover{ color:#d4af5f; }
 
+  .auth-tabs{ display:flex; gap:8px; margin:16px 0 20px; }
+  .auth-tab{
+    flex:1; text-align:center; padding:11px 6px; border-radius:var(--radius); cursor:pointer;
+    font-family:'Oswald', sans-serif; text-transform:uppercase; letter-spacing:1px; font-size:12.5px;
+    border:1px solid var(--line-strong); color:var(--bone-dim); transition: all .15s ease;
+  }
+  .auth-tab:hover{ border-color:var(--brass-dim); color:var(--bone); }
+  .auth-tab.active{ background:var(--brass); color:#141005; border-color:var(--brass); font-weight:700; }
+
   /* ---------- Modal (janela de atenção) ---------- */
   .modal-overlay{
     position:fixed;
@@ -465,21 +474,26 @@
    do seu projeto Supabase (Project Settings → API).
    Crie a tabela com o SQL abaixo no SQL Editor do Supabase:
 
-   create table leads (
+   create table usuarios (
      id uuid primary key default gen_random_uuid(),
      nome text not null,
      sobrenome text not null,
      whatsapp text not null,
+     login text not null unique,
+     senha_hash text not null,
+     avaliacao integer,
      created_at timestamp with time zone default now()
    );
-   -- lembre-se de habilitar uma policy de INSERT para a role "anon"
+   -- habilite policies de INSERT, SELECT e UPDATE para a role "anon"
+   -- a senha nunca é salva em texto puro: só o hash SHA-256 dela é enviado ao Supabase
    ======================================== */
 const CONFIG = {
   SUPABASE_URL: 'https://hqviykruvcybhkvgjdjx.supabase.co',
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhxdml5a3J1dmN5YmhrdmdqZGp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzODUxNzcsImV4cCI6MjEwMDk2MTE3N30.fZuLWr8EoEC-sQgSTVZVC73G7MEjMXRYYQtLi9Hizxo',
-  SUPABASE_TABLE: 'leads',
+  SUPABASE_TABLE: 'usuarios',
   WHATSAPP_LINK: 'https://chat.whatsapp.com/I5jkLMoEaRdEqSWdkyT4hb?s=cl&p=a&ilr=4',
-  INSTAGRAM_HANDLE: '@foconamissao.con'
+  INSTAGRAM_HANDLE: '@foconamissao.con',
+  INSTAGRAM_URL: 'https://instagram.com/foconamissao.con'
 };
 
 
@@ -769,15 +783,17 @@ function buildShuffledQuiz(questionSet){
 let QUIZ = [];
 
 let state = {
-  screen: 'lead',
-  nome: '', sobrenome: '', whatsapp: '',
+  screen: 'auth',
+  authTab: 'cadastro',
+  usuario: null,
+  generatedSenha: '',
   simulado: null,
   current: 0,
   score: 0,
   selected: null,
   answered: false,
-  saveStatus: null,
   showUnlockModal: false,
+  showInstagramModal: false,
   rating: 0,
   ratingSubmitted: false,
   byMateria: {}
@@ -792,48 +808,67 @@ function onlyDigits(v){
   return v.replace(/\D/g,'');
 }
 
-async function saveLead(nome, sobrenome, whatsapp){
-  if(!CONFIG.SUPABASE_URL || CONFIG.SUPABASE_URL.indexOf('COLOQUE_AQUI') !== -1){
-    console.warn('Supabase não configurado ainda — lead não foi persistido. Preencha CONFIG no topo do arquivo.');
-    return;
-  }
-  const whatsappDigits = onlyDigits(whatsapp);
-  try{
-    const checkUrl = `${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.SUPABASE_TABLE}?whatsapp=eq.${encodeURIComponent(whatsappDigits)}&select=id`;
-    const checkResp = await fetch(checkUrl, {
-      headers: {
-        'apikey': CONFIG.SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-      }
-    });
-    const existing = await checkResp.json();
-    if(Array.isArray(existing) && existing.length > 0){
-      console.log('WhatsApp já cadastrado — não duplicando o lead na tabela.');
-      return;
-    }
-    await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.SUPABASE_TABLE}`, {
-      method: 'POST',
-      headers: {
-        'apikey': CONFIG.SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({ nome, sobrenome, whatsapp: whatsappDigits })
-    });
-  }catch(err){
-    console.error('Falha ao salvar lead no Supabase:', err);
-  }
+function supabaseConfigured(){
+  return CONFIG.SUPABASE_URL && CONFIG.SUPABASE_URL.indexOf('COLOQUE_AQUI') === -1;
 }
 
-async function saveRating(whatsapp, rating){
-  if(!CONFIG.SUPABASE_URL || CONFIG.SUPABASE_URL.indexOf('COLOQUE_AQUI') !== -1){
+async function sha256Hex(text){
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function normalizeForLogin(nome){
+  return nome
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z]/g,'') || 'aluno';
+}
+
+function generateSenha(){
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let s = '';
+  for(let i=0;i<6;i++) s += chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+
+async function loginExists(login){
+  if(!supabaseConfigured()) return false;
+  try{
+    const resp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.SUPABASE_TABLE}?login=eq.${encodeURIComponent(login)}&select=id`, {
+      headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}` }
+    });
+    const rows = await resp.json();
+    return Array.isArray(rows) && rows.length > 0;
+  }catch(e){ return false; }
+}
+
+async function generateUniqueLogin(nomeBase){
+  for(let i=0;i<8;i++){
+    const candidate = nomeBase + Math.floor(100 + Math.random()*900);
+    if(!(await loginExists(candidate))) return candidate;
+  }
+  return nomeBase + Date.now().toString().slice(-5);
+}
+
+async function whatsappExists(whatsappDigits){
+  if(!supabaseConfigured()) return false;
+  try{
+    const resp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.SUPABASE_TABLE}?whatsapp=eq.${encodeURIComponent(whatsappDigits)}&select=id`, {
+      headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}` }
+    });
+    const rows = await resp.json();
+    return Array.isArray(rows) && rows.length > 0;
+  }catch(e){ return false; }
+}
+
+async function saveRating(login, rating){
+  if(!supabaseConfigured()){
     console.warn('Supabase não configurado ainda — avaliação não foi persistida.');
     return;
   }
-  const whatsappDigits = onlyDigits(whatsapp);
   try{
-    await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.SUPABASE_TABLE}?whatsapp=eq.${encodeURIComponent(whatsappDigits)}`, {
+    await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.SUPABASE_TABLE}?login=eq.${encodeURIComponent(login)}`, {
       method: 'PATCH',
       headers: {
         'apikey': CONFIG.SUPABASE_ANON_KEY,
@@ -851,11 +886,28 @@ async function saveRating(whatsapp, rating){
 window.rateMaterial = function(n){
   state.rating = n;
   state.ratingSubmitted = true;
-  saveRating(state.whatsapp, n);
+  saveRating(state.usuario.login, n);
   render();
 };
 
-window.submitLead = function(){
+window.switchAuthTab = function(tab){
+  state.authTab = tab;
+  hideAuthError();
+  render();
+};
+
+function showAuthError(id, msg){
+  const el = document.getElementById(id);
+  if(el){ el.textContent = msg; el.style.display = 'block'; }
+}
+function hideAuthError(){
+  ['cadastroErrorMsg','loginErrorMsg'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+}
+
+window.submitCadastro = async function(){
   const nome = document.getElementById('inp-nome').value.trim();
   const sobrenome = document.getElementById('inp-sobrenome').value.trim();
   const whatsapp = document.getElementById('inp-whatsapp').value.trim();
@@ -865,14 +917,87 @@ window.submitLead = function(){
   toggleError('err-sobrenome', sobrenome.length < 2); if(sobrenome.length < 2) ok = false;
   const waValid = isValidWhatsapp(whatsapp);
   toggleError('err-whatsapp', !waValid); if(!waValid) ok = false;
-
   if(!ok) return;
 
-  state.nome = nome; state.sobrenome = sobrenome; state.whatsapp = whatsapp;
-  saveLead(nome, sobrenome, whatsapp);
-  state.screen = 'menu';
-  state.showUnlockModal = true;
+  const btn = document.getElementById('btn-cadastrar');
+  if(btn){ btn.disabled = true; btn.textContent = 'Gerando seu acesso...'; }
+
+  const whatsappDigits = onlyDigits(whatsapp);
+
+  if(await whatsappExists(whatsappDigits)){
+    if(btn){ btn.disabled = false; btn.textContent = 'Cadastrar e gerar acesso'; }
+    showAuthError('cadastroErrorMsg', 'Esse WhatsApp já tem cadastro. Use a aba "Entrar" com o login que você recebeu.');
+    return;
+  }
+
+  const base = normalizeForLogin(nome);
+  const login = await generateUniqueLogin(base);
+  const senha = generateSenha();
+  const senhaHash = await sha256Hex(senha);
+
+  if(supabaseConfigured()){
+    try{
+      await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.SUPABASE_TABLE}`, {
+        method: 'POST',
+        headers: {
+          'apikey': CONFIG.SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ nome, sobrenome, whatsapp: whatsappDigits, login, senha_hash: senhaHash })
+      });
+    }catch(err){
+      console.error('Falha ao cadastrar no Supabase:', err);
+    }
+  } else {
+    console.warn('Supabase não configurado ainda — cadastro não foi persistido.');
+  }
+
+  state.usuario = { nome, sobrenome, whatsapp: whatsappDigits, login };
+  state.generatedSenha = senha;
+  state.screen = 'credenciais';
   render();
+};
+
+window.submitLogin = async function(){
+  const login = document.getElementById('inp-login').value.trim();
+  const senha = document.getElementById('inp-senha').value.trim();
+
+  let ok = true;
+  toggleError('err-login', login.length < 2); if(login.length < 2) ok = false;
+  toggleError('err-senha', senha.length < 2); if(senha.length < 2) ok = false;
+  if(!ok) return;
+
+  const btn = document.getElementById('btn-entrar');
+  if(btn){ btn.disabled = true; btn.textContent = 'Entrando...'; }
+
+  if(!supabaseConfigured()){
+    if(btn){ btn.disabled = false; btn.textContent = 'Entrar'; }
+    showAuthError('loginErrorMsg', 'Supabase não configurado ainda — não é possível validar o login.');
+    return;
+  }
+
+  try{
+    const senhaHash = await sha256Hex(senha);
+    const resp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.SUPABASE_TABLE}?login=eq.${encodeURIComponent(login)}&select=nome,sobrenome,whatsapp,login,senha_hash`, {
+      headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}` }
+    });
+    const rows = await resp.json();
+    if(!Array.isArray(rows) || rows.length === 0 || rows[0].senha_hash !== senhaHash){
+      if(btn){ btn.disabled = false; btn.textContent = 'Entrar'; }
+      showAuthError('loginErrorMsg', 'Login ou senha incorretos.');
+      return;
+    }
+    state.usuario = { nome: rows[0].nome, sobrenome: rows[0].sobrenome, whatsapp: rows[0].whatsapp, login: rows[0].login };
+    state.screen = 'menu';
+    state.showInstagramModal = true;
+    render();
+  }catch(err){
+    console.error('Falha ao validar login no Supabase:', err);
+    if(btn){ btn.disabled = false; btn.textContent = 'Entrar'; }
+    showAuthError('loginErrorMsg', 'Não foi possível entrar agora. Tente de novo em alguns instantes.');
+  }
 };
 
 function toggleError(id, show){
@@ -880,9 +1005,19 @@ function toggleError(id, show){
   if(el) el.classList.toggle('show', show);
 }
 
+window.continuarAposCredenciais = function(){
+  state.screen = 'menu';
+  state.showUnlockModal = true;
+  render();
+};
+
 window.afterWhatsappClick = function(){
   state.showUnlockModal = false;
-  state.screen = 'menu';
+  render();
+};
+
+window.closeInstagramModal = function(){
+  state.showInstagramModal = false;
   render();
 };
 
@@ -940,13 +1075,16 @@ window.restartQuiz = function(){
 function render(){
   const app = document.getElementById('app');
   let screenHtml = '';
-  if(state.screen === 'lead') screenHtml = screenLead();
+  if(state.screen === 'auth') screenHtml = screenAuth();
+  else if(state.screen === 'credenciais') screenHtml = screenCredenciais();
   else if(state.screen === 'menu') screenHtml = screenMenu();
   else if(state.screen === 'quizIntro') screenHtml = screenQuizIntro();
   else if(state.screen === 'quiz') screenHtml = screenQuiz();
   else if(state.screen === 'result') screenHtml = screenResult();
 
-  app.innerHTML = screenHtml + (state.showUnlockModal ? unlockModal() : '');
+  app.innerHTML = screenHtml
+    + (state.showUnlockModal ? unlockModal() : '')
+    + (state.showInstagramModal ? instagramModal() : '');
 }
 
 function unlockModal(){
@@ -969,12 +1107,63 @@ function unlockModal(){
   `;
 }
 
-function screenLead(){
+function instagramModal(){
+  return `
+    <div class="modal-overlay">
+      <div class="modal-dialog" role="dialog" aria-modal="true">
+        <div class="modal-titlebar">
+          <span class="modal-titlebar-icon">📸</span>
+          <span>Apoie o projeto</span>
+        </div>
+        <div class="modal-body">
+          <p class="modal-text">
+            Tire uma foto ou print estudando e marque a gente no Instagram <b>${escapeHtml(CONFIG.INSTAGRAM_HANDLE)}</b> pra ajudar o projeto a crescer!
+          </p>
+          <a class="modal-btn" href="${CONFIG.INSTAGRAM_URL}" target="_blank" rel="noopener noreferrer" onclick="closeInstagramModal()">Abrir Instagram</a>
+          <button class="btn btn-ghost" style="margin-top:10px; width:100%;" onclick="closeInstagramModal()">Continuar sem abrir agora</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function screenAuth(){
+  const tab = state.authTab;
+  const tabsHtml = `
+    <div class="auth-tabs">
+      <div class="auth-tab ${tab==='cadastro' ? 'active' : ''}" onclick="switchAuthTab('cadastro')">Cadastrar</div>
+      <div class="auth-tab ${tab==='login' ? 'active' : ''}" onclick="switchAuthTab('login')">Entrar</div>
+    </div>
+  `;
+
+  if(tab === 'login'){
+    return `
+      <div class="card">
+        <p class="eyebrow">Já tenho conta</p>
+        <h1 class="title">Entrar</h1>
+        ${tabsHtml}
+        <p class="lead">Digite o login e a senha que você recebeu no cadastro.</p>
+
+        <label for="inp-login">Login</label>
+        <input type="text" id="inp-login" placeholder="Seu login" autocomplete="off">
+        <div class="field-error" id="err-login">Informe seu login.</div>
+
+        <label for="inp-senha">Senha</label>
+        <input type="text" id="inp-senha" placeholder="Sua senha" autocomplete="off">
+        <div class="field-error" id="err-senha">Informe sua senha.</div>
+
+        <button class="btn btn-primary" id="btn-entrar" onclick="submitLogin()">Entrar</button>
+        <p class="fineprint" id="loginErrorMsg" style="display:none;color:var(--oxide);"></p>
+      </div>
+    `;
+  }
+
   return `
     <div class="card">
       <p class="eyebrow">Acesso gratuito</p>
       <h1 class="title">Bem vindo(a), futuro(a) policial!</h1>
-      <p class="lead">Você acaba de dar um importante passo rumo à sua aprovação. Preencha seus dados para fazer parte da comunidade Foco na Missão e desbloquear gratuitamente os simulados.<br><br><b>A missão começa agora.</b></p>
+      ${tabsHtml}
+      <p class="lead">Você acaba de dar um importante passo rumo à sua aprovação. Preencha seus dados para fazer parte da comunidade Foco na Missão e gerar seu login de acesso.<br><br><b>A missão começa agora.</b></p>
 
       <label for="inp-nome">Nome</label>
       <input type="text" id="inp-nome" placeholder="Seu nome">
@@ -988,8 +1177,27 @@ function screenLead(){
       <input type="tel" id="inp-whatsapp" placeholder="(00) 00000-0000">
       <div class="field-error" id="err-whatsapp">Informe um número de WhatsApp válido.</div>
 
-      <button class="btn btn-primary" onclick="submitLead()">Continuar</button>
-      <p class="fineprint">Seus dados são usados apenas para liberar o acesso ao grupo de estudos e aos materiais gratuitos.</p>
+      <button class="btn btn-primary" id="btn-cadastrar" onclick="submitCadastro()">Cadastrar e gerar acesso</button>
+      <p class="fineprint" id="cadastroErrorMsg" style="display:none;color:var(--oxide);"></p>
+      <p class="fineprint">Seus dados são usados apenas para liberar o acesso aos materiais gratuitos.</p>
+    </div>
+  `;
+}
+
+function screenCredenciais(){
+  return `
+    <div class="card">
+      <p class="eyebrow">Cadastro concluído</p>
+      <h1 class="title">Guarde seu acesso</h1>
+      <p class="lead">Anote em local seguro — você vai usar esse login e essa senha para entrar da próxima vez, na aba "Entrar".</p>
+      <div class="attention-box">
+        <div class="attention-icon">🔑</div>
+        <div class="attention-text">
+          <b>Login:</b> ${escapeHtml(state.usuario.login)}<br>
+          <b>Senha:</b> ${escapeHtml(state.generatedSenha)}
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:18px;" onclick="continuarAposCredenciais()">Já anotei, continuar</button>
     </div>
   `;
 }
