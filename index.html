@@ -442,6 +442,11 @@
   .folder-icon{ font-size:26px; flex-shrink:0; }
   .folder-text{ display:flex; flex-direction:column; gap:3px; flex:1; }
   .folder-title{ font-family:'Oswald', sans-serif; font-weight:600; font-size:15.5px; color:var(--bone); text-transform:uppercase; letter-spacing:0.5px; }
+  .pdf-tag{
+    display:inline-block; background:rgba(182,144,63,0.18); border:1px solid var(--brass);
+    color:var(--brass); font-size:9.5px; letter-spacing:1px; padding:2px 6px; border-radius:3px;
+    vertical-align:middle; margin-left:4px;
+  }
   .folder-subtitle{ font-size:12.5px; color:var(--bone-dim); line-height:1.4; }
   .folder-arrow{ font-size:22px; color:var(--brass); flex-shrink:0; }
 
@@ -1234,6 +1239,251 @@ const QUESTIONS_DIA3 = [
 }
 ];
 
+const QUESTIONS_DIA4 = [
+// ===== EXECUÇÃO PENAL (10 novas) =====
+{
+  materia: "Execução Penal",
+  q: "Segundo o art. 61 da LEP, são órgãos da execução penal, EXCETO:",
+  options: [
+    "o Conselho Nacional de Política Criminal e Penitenciária.",
+    "o Juízo da Execução.",
+    "a Ordem dos Advogados do Brasil.",
+    "o Conselho Penitenciário."
+  ],
+  correct: 2,
+  exp: "O art. 61 lista: CNPCP, Juízo da Execução, Ministério Público, Conselho Penitenciário, Departamentos Penitenciários, Patronato, Conselho da Comunidade e Defensoria Pública. A OAB não integra esse rol, embora indique um advogado para compor o Conselho da Comunidade."
+},
+{
+  materia: "Execução Penal",
+  q: "Segundo o art. 66 da LEP, compete ao Juiz da execução, entre outras atribuições:",
+  options: [
+    "aplicar aos casos julgados lei posterior que de qualquer modo favoreça o condenado, e declarar extinta a punibilidade.",
+    "aplicar exclusivamente lei posterior mais gravosa, sendo vedada a aplicação de lei mais benéfica ao condenado.",
+    "elaborar, sozinho, o programa individualizador da pena, sem qualquer participação da Comissão Técnica de Classificação.",
+    "substituir integralmente as funções do Conselho Penitenciário, acumulando ambas as competências na mesma pessoa."
+  ],
+  correct: 0,
+  exp: "O art. 66, I e II, atribui ao Juiz da execução aplicar lei posterior mais favorável ao condenado e declarar extinta a punibilidade, entre diversas outras competências elencadas no mesmo artigo."
+},
+{
+  materia: "Execução Penal",
+  q: "Segundo o art. 67 da LEP, ao Ministério Público, no âmbito da execução penal, incumbe:",
+  options: [
+    "fiscalizar a execução da pena e da medida de segurança, oficiando no processo executivo e nos incidentes da execução.",
+    "substituir o Juiz da execução em todas as suas atribuições, quando este estiver impedido por qualquer motivo legal.",
+    "administrar diretamente os estabelecimentos penais, cabendo-lhe a nomeação do diretor de cada unidade prisional.",
+    "aplicar diretamente as sanções disciplinares aos internos, sem qualquer participação da autoridade administrativa."
+  ],
+  correct: 0,
+  exp: "O art. 67 atribui ao Ministério Público a fiscalização da execução da pena e da medida de segurança, oficiando no processo executivo e nos incidentes — função fiscalizadora, não administrativa nem substitutiva do Juiz."
+},
+{
+  materia: "Execução Penal",
+  q: "Segundo os arts. 80 e 81 da LEP, o Conselho da Comunidade, existente em cada comarca, tem entre suas atribuições:",
+  options: [
+    "visitar, pelo menos mensalmente, os estabelecimentos penais da comarca, e entrevistar presos.",
+    "aplicar sanções disciplinares aos presos, substituindo, nessa função, a autoridade administrativa do estabelecimento.",
+    "julgar recursos contra decisões do Juiz da execução, em caráter definitivo e irrecorrível.",
+    "administrar o orçamento anual destinado às penitenciárias estaduais, sem qualquer fiscalização externa."
+  ],
+  correct: 0,
+  exp: "O art. 81, I e II, atribui ao Conselho da Comunidade visitar mensalmente os estabelecimentos penais e entrevistar presos — função de acompanhamento social, não administrativa ou jurisdicional."
+},
+{
+  materia: "Execução Penal",
+  q: "Segundo o art. 82 da LEP, os estabelecimentos penais destinam-se:",
+  options: [
+    "ao condenado, ao submetido à medida de segurança, ao preso provisório e ao egresso.",
+    "exclusivamente ao condenado por sentença transitada em julgado, excluído qualquer preso provisório.",
+    "exclusivamente ao submetido à medida de segurança, sendo os demais presos alojados em unidades diversas.",
+    "exclusivamente ao egresso, sendo os condenados e presos provisórios alojados em unidades federais específicas."
+  ],
+  correct: 0,
+  exp: "O art. 82, caput, destina os estabelecimentos penais a quatro categorias: condenado, submetido à medida de segurança, preso provisório e egresso."
+},
+{
+  materia: "Execução Penal",
+  q: "Segundo o art. 87 da LEP, a penitenciária destina-se:",
+  options: [
+    "ao condenado à pena de reclusão, em regime fechado.",
+    "ao condenado à pena de detenção, em regime semiaberto, exclusivamente.",
+    "ao preso provisório, exclusivamente, sendo vedado o recolhimento de condenados nesse tipo de unidade.",
+    "ao egresso, durante o período de assistência pós-soltura previsto no art. 25 da mesma lei."
+  ],
+  correct: 0,
+  exp: "O art. 87, caput, destina a penitenciária ao condenado à pena de reclusão, em regime fechado."
+},
+{
+  materia: "Execução Penal",
+  q: "Segundo o art. 93 da LEP, a Casa do Albergado destina-se ao cumprimento de pena privativa de liberdade, em regime aberto, e da pena de:",
+  options: [
+    "limitação de fim de semana.",
+    "prestação de serviços à comunidade, exclusivamente, excluída qualquer outra modalidade de pena restritiva.",
+    "multa, convertida em prestação de serviços por decisão do Juiz da execução.",
+    "interdição temporária de direitos, exclusivamente, excluída qualquer pena privativa de liberdade."
+  ],
+  correct: 0,
+  exp: "O art. 93 destina a Casa do Albergado ao regime aberto e também à pena de limitação de fim de semana — duas hipóteses distintas reunidas no mesmo dispositivo."
+},
+{
+  materia: "Execução Penal",
+  q: "Segundo o art. 120 da LEP, os condenados que cumprem pena em regime fechado ou semiaberto, e os presos provisórios, podem obter permissão de saída, mediante escolta, em caso de:",
+  options: [
+    "falecimento ou doença grave do cônjuge, companheira, ascendente, descendente ou irmão, ou necessidade de tratamento médico.",
+    "aniversário de qualquer familiar até o terceiro grau, independentemente de qualquer outra condição legal.",
+    "necessidade de realizar compras pessoais fora do estabelecimento, mediante simples autorização verbal do agente.",
+    "participação em eventos sociais e festivos, a critério exclusivo e discricionário do diretor do estabelecimento."
+  ],
+  correct: 0,
+  exp: "O art. 120, I e II, restringe a permissão de saída a duas hipóteses: falecimento ou doença grave de parente próximo, ou necessidade de tratamento médico — sempre mediante escolta."
+},
+{
+  materia: "Execução Penal",
+  q: "Segundo o art. 123 da LEP, a autorização para saída temporária do condenado em regime semiaberto será concedida por ato motivado do Juiz da execução, dependendo, entre outros requisitos, do cumprimento mínimo de:",
+  options: [
+    "1/6 da pena, se o condenado for primário, e 1/4, se reincidente.",
+    "1/3 da pena, se o condenado for primário, e metade, se reincidente, sem qualquer outra distinção.",
+    "metade da pena, independentemente de o condenado ser primário ou reincidente.",
+    "2/3 da pena, exigidos igualmente de condenados primários e reincidentes, sem qualquer distinção legal."
+  ],
+  correct: 0,
+  exp: "O art. 123, II, exige cumprimento mínimo de 1/6 da pena para o condenado primário, e 1/4 para o reincidente, além do comportamento adequado e da compatibilidade do benefício com os objetivos da pena."
+},
+{
+  materia: "Execução Penal",
+  q: "Segundo o art. 131 da LEP, o livramento condicional pode ser concedido pelo Juiz da execução, presentes os requisitos do Código Penal, sendo correto afirmar que essa decisão é tomada:",
+  options: [
+    "ouvidos o Ministério Público e o Conselho Penitenciário, antes da concessão do benefício.",
+    "sem qualquer manifestação prévia do Ministério Público ou do Conselho Penitenciário, por decisão exclusiva do Juiz.",
+    "mediante requerimento exclusivo da autoridade administrativa do estabelecimento, sem participação do Juiz da execução.",
+    "por decisão do Conselho Penitenciário, cabendo ao Juiz apenas homologar a decisão já tomada por esse órgão."
+  ],
+  correct: 0,
+  exp: "O art. 131 exige que a concessão do livramento condicional seja precedida da manifestação do Ministério Público e do Conselho Penitenciário — a decisão final é do Juiz, mas não sem essas oitivas."
+},
+// ===== DIREITOS HUMANOS (10 novas) =====
+{
+  materia: "Direitos Humanos",
+  q: "Sobre as gerações (ou dimensões) dos direitos humanos, é correto afirmar que:",
+  options: [
+    "os direitos de primeira geração correspondem às liberdades individuais; os de segunda, aos direitos sociais; os de terceira, aos direitos coletivos e difusos.",
+    "os direitos de primeira geração correspondem aos direitos sociais; os de segunda, às liberdades individuais; os de terceira, aos direitos coletivos.",
+    "todas as gerações de direitos humanos surgiram simultaneamente, no mesmo contexto histórico, sem qualquer ordem cronológica.",
+    "a classificação em gerações foi abandonada pela doutrina, não havendo mais qualquer referência a esse critério."
+  ],
+  correct: 0,
+  exp: "A doutrina majoritária associa a primeira geração às liberdades individuais (direitos civis e políticos), a segunda aos direitos sociais, econômicos e culturais, e a terceira aos direitos coletivos e difusos (meio ambiente, paz, desenvolvimento)."
+},
+{
+  materia: "Direitos Humanos",
+  q: "Sobre a característica da historicidade dos direitos humanos, é correto afirmar que ela significa que tais direitos:",
+  options: [
+    "resultam de um processo histórico de conquistas graduais, podendo surgir, transformar-se ou se expandir ao longo do tempo.",
+    "são imutáveis desde sua origem, não podendo jamais ser ampliados ou transformados pela evolução social.",
+    "deixam de existir automaticamente após um determinado período de tempo fixado em tratado internacional.",
+    "aplicam-se apenas a fatos históricos passados, sem qualquer relevância para situações presentes ou futuras."
+  ],
+  correct: 0,
+  exp: "A historicidade indica que os direitos humanos não são um dado pronto e definitivo, mas resultado de conquistas históricas graduais, sujeitas a expansão e transformação conforme a evolução da sociedade."
+},
+{
+  materia: "Direitos Humanos",
+  q: "Sobre a Declaração Universal dos Direitos Humanos (1948) e os Pactos Internacionais de 1966 (Direitos Civis e Políticos, e Direitos Econômicos, Sociais e Culturais), é correto afirmar que:",
+  options: [
+    "a Declaração de 1948 é resolução da ONU, sem força vinculante própria; os Pactos de 1966 deram status de tratado aos direitos ali previstos.",
+    "a Declaração de 1948 sempre teve força de tratado vinculante, tornando os Pactos de 1966 juridicamente desnecessários e sem utilidade.",
+    "os Pactos de 1966 revogaram por completo a Declaração de 1948, que perdeu toda relevância jurídica e histórica no sistema atual.",
+    "nenhum desses dois documentos tem qualquer relação com o sistema global de proteção dos direitos humanos da própria ONU."
+  ],
+  correct: 0,
+  exp: "A Declaração de 1948 é resolução da Assembleia Geral, sem força vinculante própria (soft law); os Pactos de 1966 (PIDCP e PIDESC) são tratados internacionais que juridicizaram os direitos nela previstos, com força vinculante para os Estados signatários."
+},
+{
+  materia: "Direitos Humanos",
+  q: "Segundo a Lei nº 9.455/1997 (Lei de Tortura), constitui crime de tortura, entre outras condutas, constranger alguém com violência ou grave ameaça, causando-lhe sofrimento físico ou mental:",
+  options: [
+    "com o fim de obter informação, declaração ou confissão da vítima ou de terceira pessoa.",
+    "exclusivamente quando praticado por agente público no exercício de suas funções, excluído qualquer particular.",
+    "apenas quando resultar em lesão corporal gravíssima ou morte da vítima, sendo atípica a conduta sem esse resultado.",
+    "apenas quando praticado em estabelecimento penal, sendo atípica a mesma conduta praticada em qualquer outro local."
+  ],
+  correct: 0,
+  exp: "O art. 1º, I, \"a\", da Lei nº 9.455/1997 tipifica o constrangimento com violência ou grave ameaça, causando sofrimento físico ou mental, com o fim de obter informação, declaração ou confissão — crime comum, que pode ser praticado por qualquer pessoa, e que não exige resultado lesivo específico para se consumar."
+},
+{
+  materia: "Direitos Humanos",
+  q: "Segundo a Lei nº 9.455/1997, quando o crime de tortura é praticado por agente público, essa circunstância:",
+  options: [
+    "constitui causa de aumento de pena, além de acarretar a perda do cargo, função ou emprego público.",
+    "é irrelevante para a dosimetria da pena, sendo tratada exatamente como se o agente fosse um particular qualquer.",
+    "descaracteriza o crime de tortura, configurando, nessa hipótese, apenas o crime de abuso de autoridade.",
+    "constitui causa de diminuição de pena, em razão do dever funcional de manter a ordem no estabelecimento."
+  ],
+  correct: 0,
+  exp: "O §4º do art. 1º da Lei nº 9.455/1997 aumenta a pena de 1/6 a 1/3 quando o crime é cometido por agente público, e o §5º determina a perda do cargo, função ou emprego público, além da interdição para o exercício de função pública."
+},
+{
+  materia: "Direitos Humanos",
+  q: "Sobre a finalidade da execução penal na perspectiva dos direitos humanos, é correto afirmar que a pena, além de sua dimensão retributiva, deve orientar-se, principalmente, para:",
+  options: [
+    "a ressocialização do condenado, viabilizando sua reintegração à convivência social após o cumprimento da pena.",
+    "exclusivamente a punição e o sofrimento do condenado, sem qualquer preocupação com sua reintegração social.",
+    "a segregação permanente do condenado, impedindo, em qualquer hipótese, seu retorno à convivência em sociedade.",
+    "a vingança da vítima contra o condenado, como forma de reparação simbólica pelo crime praticado."
+  ],
+  correct: 0,
+  exp: "A perspectiva contemporânea de direitos humanos aplicada à execução penal enfatiza a ressocialização como finalidade essencial da pena, ao lado das dimensões retributiva e preventiva, viabilizando o retorno digno do condenado à sociedade."
+},
+{
+  materia: "Direitos Humanos",
+  q: "As assistências previstas nos arts. 10 a 25 da LEP (material, à saúde, jurídica, educacional, social e religiosa) representam, na perspectiva dos direitos humanos:",
+  options: [
+    "a concretização de direitos fundamentais da pessoa presa, que não perde sua condição de titular de direitos humanos com a prisão.",
+    "meras liberalidades do Estado, sem qualquer fundamento em direitos humanos ou em normas constitucionais.",
+    "benefícios concedidos exclusivamente a presos que nunca tenham cometido falta disciplinar durante a execução.",
+    "obrigações que competem exclusivamente à família do preso, sendo o Estado apenas fiscalizador dessa prestação."
+  ],
+  correct: 0,
+  exp: "As assistências da LEP concretizam, no plano infraconstitucional, direitos humanos e fundamentais da pessoa presa — a privação de liberdade não implica a perda da condição de titular de direitos humanos."
+},
+{
+  materia: "Direitos Humanos",
+  q: "Sobre a atenção a grupos vulneráveis no sistema prisional (mulheres, população LGBTQIA+, idosos e pessoas com deficiência), é correto afirmar que os parâmetros de direitos humanos exigem:",
+  options: [
+    "tratamento diferenciado e adequado às necessidades específicas de cada grupo, sem que isso configure privilégio, mas sim igualdade material.",
+    "tratamento absolutamente idêntico entre todos os presos, sendo vedada qualquer diferenciação, ainda que por necessidade específica de um grupo.",
+    "exclusão desses grupos do sistema prisional comum, sendo vedado seu recolhimento em qualquer estabelecimento penal do Estado.",
+    "aplicação de sanções disciplinares mais rigorosas a esses grupos, como forma de compensar eventual tratamento diferenciado em outras áreas."
+  ],
+  correct: 0,
+  exp: "Os parâmetros de direitos humanos exigem tratamento diferenciado e adequado a grupos vulneráveis, como expressão do princípio da igualdade material (tratar desigualmente os desiguais na medida de suas desigualdades), e não como privilégio ou exceção."
+},
+{
+  materia: "Direitos Humanos",
+  q: "Segundo o art. 1º, III, da Constituição Federal, a dignidade da pessoa humana é:",
+  options: [
+    "fundamento da República Federativa do Brasil, funcionando como vetor interpretativo de todo o sistema de direitos e garantias.",
+    "objetivo fundamental da República, ao lado da erradicação da pobreza e da redução das desigualdades regionais.",
+    "princípio aplicável exclusivamente às relações entre particulares, sem qualquer eficácia nas relações com o Estado.",
+    "direito social, previsto no Título dos Direitos Sociais da Constituição Federal, ao lado da educação e da saúde."
+  ],
+  correct: 0,
+  exp: "A dignidade da pessoa humana é fundamento da República (art. 1º, III, CF), distinto dos objetivos fundamentais do art. 3º, funcionando como vetor interpretativo de todo o sistema constitucional de direitos e garantias — inclusive nas relações entre particulares."
+},
+{
+  materia: "Direitos Humanos",
+  q: "Sobre o combate à discriminação como diretriz de direitos humanos, é correto afirmar que:",
+  options: [
+    "a proteção contra a discriminação abrange critérios como raça, cor, sexo, orientação sexual, religião e outras condições pessoais.",
+    "a proteção contra a discriminação abrange exclusivamente o critério de raça e cor, excluídos quaisquer outros critérios pessoais.",
+    "a proteção contra a discriminação aplica-se apenas às relações de trabalho, sendo inaplicável a outros contextos sociais.",
+    "a proteção contra a discriminação depende de lei ordinária específica para cada critério, sem qualquer fundamento constitucional direto."
+  ],
+  correct: 0,
+  exp: "O combate à discriminação, como diretriz de direitos humanos, é amplo: abrange raça, cor, sexo, orientação sexual, religião, origem e diversos outros critérios, com fundamento direto no art. 3º, IV, e no art. 5º da Constituição Federal."
+}
+];
+
 const SIMULADOS = {
   dia1: {
     key: 'dia1',
@@ -1257,7 +1507,16 @@ const SIMULADOS = {
     subtitulo: 'Legislação Específica (LC 122/94 e LC 566/2016) e Direito Administrativo',
     badge: 'DIA 3',
     icone: '📅',
+    pdfUrl: 'foco-na-missao-dia3-resumo.pdf',
     questions: QUESTIONS_DIA3
+  },
+  dia4: {
+    key: 'dia4',
+    titulo: 'Dia 4 · 06/08/2026',
+    subtitulo: 'Execução Penal e Direitos Humanos',
+    badge: 'DIA 4',
+    icone: '📅',
+    questions: QUESTIONS_DIA4
   }
 };
 
@@ -1715,7 +1974,7 @@ function screenMenu(){
     <button class="folder-card" onclick="selectSimulado('${sim.key}')">
       <span class="folder-icon">${sim.icone}</span>
       <span class="folder-text">
-        <span class="folder-title">${escapeHtml(sim.titulo)}</span>
+        <span class="folder-title">${escapeHtml(sim.titulo)}${sim.pdfUrl ? ' <span class="pdf-tag">PDF</span>' : ''}</span>
         <span class="folder-subtitle">${escapeHtml(sim.subtitulo)}</span>
       </span>
       <span class="folder-arrow">›</span>
@@ -1734,12 +1993,16 @@ function screenMenu(){
 
 function screenQuizIntro(){
   const sim = SIMULADOS[state.simulado];
+  const pdfButton = sim.pdfUrl
+    ? `<a class="btn btn-ghost" style="margin-top:10px;" href="${escapeHtml(sim.pdfUrl)}" target="_blank" rel="noopener noreferrer">📄 Baixar resumo em PDF deste dia</a>`
+    : '';
   return `
     <div class="card">
       <p class="eyebrow">${escapeHtml(sim.badge)}</p>
       <h1 class="title">${escapeHtml(sim.titulo)}</h1>
       <p class="lead">${escapeHtml(sim.subtitulo)} — ${sim.questions.length} questões de múltipla escolha (A–D), no padrão e nível de complexidade das provas do Instituto Avalia. Ao responder, você já vê o gabarito comentado.</p>
       <button class="btn btn-primary" onclick="startQuiz()">Iniciar simulado</button>
+      ${pdfButton}
       <button class="btn btn-ghost" style="margin-top:10px;" onclick="backToMenu()">Voltar ao cronograma</button>
     </div>
   `;
